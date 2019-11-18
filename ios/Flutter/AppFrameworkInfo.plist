@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleDevelopmentRegion</key>
-  <string>en</string>
+  <string>$(DEVELOPMENT_LANGUAGE)</string>
   <key>CFBundleExecutable</key>
   <string>App</string>
   <key>CFBundleIdentifier</key>
@@ -22,9 +22,5 @@
   <string>1.0</string>
   <key>MinimumOSVersion</key>
   <string>8.0</string>
-  <key>NSLocationAlwaysUsageDescription</key>
-  <string>Needed to access location</string>
-  <key>NSLocationWhenInUseUsageDescription</key>
-  <string>Needed to access location</string>
 </dict>
 </plist>
