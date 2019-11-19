@@ -12,13 +12,16 @@ class NewsArticle {
   NewsArticle({this.title, this.body, this.url});
 
   factory NewsArticle.fromJson(Map<String,dynamic> json) {
+
     return NewsArticle(
       title: json['title'], 
       body: json['body'], 
       url: json['url'] ?? ''
     );
-  
-}
+
+  }
+
+  Map<String, dynamic> toJson() => {'title': title, 'body': body, 'url':url };
 
   static Resource<List<NewsArticle>> get all {
     
@@ -32,7 +35,6 @@ class NewsArticle {
     );
 
   }
-
 
   Resource<List<NewsArticle>> filterByRegion(String regionCode) {
     
