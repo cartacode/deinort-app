@@ -9,5 +9,7 @@ AppState appStateReducers(AppState state, dynamic action) {
 }
 
 AppState fetchArticles(FetchArticlesAction action) {
+  print("TTTT: ");
+  print(action);
   return AppState(action.articles);
 }
