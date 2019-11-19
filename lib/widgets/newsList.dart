@@ -38,27 +38,10 @@ class NewsListState extends State<NewsList> {
 
   ListTile _buildItemsForListView(BuildContext context, int index) {
       return ListTile(
-        subtitle: Text(_newsArticles[index].title, style: TextStyle(fontSize: 18)),
+        title: Text(_newsArticles[index].title, style: TextStyle(fontSize: 18)),
+        subtitle: Text(_newsArticles[index].body, style: TextStyle(fontSize: 18)),
       );
   }
-
-  // Widget newsListWidget = Stack(
-  //   children: <Widget>[
-  //     Positioned(
-  //       top: 0.0,
-  //       child: Image.asset(
-  //         'assets/google.jpg',
-  //         fit: BoxFit.fill,
-  //       ),
-  //     ),
-  //     Center(
-  //       child: ListView.builder(
-  //         itemCount: _newsArticles.length,
-  //         itemBuilder: _buildItemsForListView,
-  //       )
-  //     ),
-  //   ],
-  // );
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +57,7 @@ class NewsListState extends State<NewsList> {
                 'assets/google.jpg',
                 width: size.width,
                 height: size.height,
-                fit: BoxFit.fill,
+                fit: BoxFit.fill
               ),
             ),
             Container(
