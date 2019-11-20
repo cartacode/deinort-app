@@ -37,6 +37,21 @@ class NewsListState extends State<NewsList> {
         ),
         body: Stack(
           children: <Widget>[
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                new Image.asset(
+                  'assets/google.jpg',
+                  width: 70,
+                ),
+                TextField(
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Enter a search key'
+                  ),
+                );
+              ]
+            ),
             Center(
               child: new Image.asset(
                 'assets/google.jpg',
@@ -52,7 +67,7 @@ class NewsListState extends State<NewsList> {
               color: Colors.blue,
               child: Stack(children: <Widget>[
                 Text(
-                  'Street1, Hemmingun',
+                  'Street11, Hemmingun',
                   style: TextStyle(fontWeight: FontWeight.bold,
                   fontSize: 18,
                   color: Colors.black),
