@@ -32,7 +32,7 @@ class UserLocation {
   static Resource<UserLocation> get info {
     
     return Resource(
-      url: Constants.GEOCODE_URL,
+      url: Constants.GEOCODE_DEMO_URL,
       parse: (response) {
         final result = json.decode(response.body); 
         return UserLocation.fromJson(result);
@@ -41,4 +41,5 @@ class UserLocation {
 
   }
 
+  String getState() => this.state;
 }
