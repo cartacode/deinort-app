@@ -3,13 +3,12 @@ import 'package:deinort_app/redux/actions.dart';
 
 AppState appStateReducers(AppState state, dynamic action) {
   if (action is FetchArticlesAction) {
-    return fetchArticles(action);
+    return AppState(action.articles, state.location);
+  } else if (action is FetchLocationAction) {
+    print("Action: ");
+    print(action.location.city);
+    return AppState(state.articles, action.location);
   }
-  return state;
-}
 
-AppState fetchArticles(FetchArticlesAction action) {
-  print("TTTT: ");
-  print(action);
-  return AppState(action.articles);
+  return state;
 }

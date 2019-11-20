@@ -20,7 +20,7 @@ class UserLocation {
     return UserLocation(
       latitude: json['latitude'], 
       longitude: json['longitude'], 
-      address: json['address'] ?? '',
+      address: json['staddress'] ?? '',
       zipcode: json['zipcode'] ?? '',
       city: json['city'] ?? '',
       state: json['state'] ?? '',
@@ -32,7 +32,7 @@ class UserLocation {
   static Resource<UserLocation> get info {
     
     return Resource(
-      url: Constants.GEOCODE_URL,
+      url: Constants.GEOCODE_DEMO_URL,
       parse: (response) {
         final result = json.decode(response.body); 
         return UserLocation.fromJson(result);
