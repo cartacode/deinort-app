@@ -20,7 +20,7 @@ class UserLocation {
     return UserLocation(
       latitude: json['latitude'], 
       longitude: json['longitude'], 
-      address: json['address'] ?? '',
+      address: json['staddress'] ?? '',
       zipcode: json['zipcode'] ?? '',
       city: json['city'] ?? '',
       state: json['state'] ?? '',
@@ -41,5 +41,4 @@ class UserLocation {
 
   }
 
-  String getState() => this.state;
 }

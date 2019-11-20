@@ -36,17 +36,4 @@ class NewsArticle {
 
   }
 
-  Resource<List<NewsArticle>> filterByRegion(String regionCode) {
-    
-    return Resource(
-      url: Constants.HEADLINE_NEWS_URL + '/region/' + regionCode + Constants.NEWS_PARAMS,
-      parse: (response) {
-        final result = json.decode(response.body); 
-        Iterable list = result['content']['story'];
-        return list.map((model) => NewsArticle.fromJson(model)).toList();
-      }
-    );
-
-  }
-
 }
