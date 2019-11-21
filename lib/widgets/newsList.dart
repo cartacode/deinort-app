@@ -1,5 +1,4 @@
 
-import 'package:deinort_app/utils/modals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -57,9 +56,9 @@ class NewsListState extends State<NewsList> {
               fit: BoxFit.fill
             ),
             Container(
-              height: 70,
-              margin: const EdgeInsets.only(top: 10.0),
-              padding: const EdgeInsets.only(top: 10.0),
+              height: 80,
+              margin: const EdgeInsets.only(top: 0.0),
+              padding: const EdgeInsets.only(top: 30, right: 10, bottom: 10, left: 0),
               color: Colors.white,
               child: Row(
                 children: [
@@ -73,23 +72,34 @@ class NewsListState extends State<NewsList> {
                       return store.state;
                     },
                     builder: (_, _state) {
-                      return Expanded(child: TextField(
-                        onSubmitted: (text) {
-                          cityName = text;
-                          final store = StoreProvider.of<AppState>(context);
-                          store.dispatch(searchNewsByCity);
-                        },
-                        style: new TextStyle(
-                          height: 2.0,
-                          color: Colors.grey                  
-                        ),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: InputBorder.none,
-                          hintText: 'Enter a search key',
+                      return Expanded(
+                        child: Container(
+                          width: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: const [
+                              BoxShadow(blurRadius: 5),
+                            ],
+                            borderRadius: BorderRadius.all(Radius.circular(18)),
+                          ),
+                          child: TextField(
+                            onSubmitted: (text) {
+                              cityName = text;
+                              final store = StoreProvider.of<AppState>(context);
+                              store.dispatch(searchNewsByCity);
+                            },
+                            style: new TextStyle(
+                              height: 1.5,
+                              color: Colors.grey                  
+                            ),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              hintText: 'Enter a search key',
+                            )
+                          )
                         )
-                      ));
+                      );
                     }
                   ),
                 ]
