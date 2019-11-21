@@ -2,12 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
 import 'package:deinort_app/models/newsArticle.dart';
 import 'package:deinort_app/models/location.dart';
+import 'package:deinort_app/redux/state.dart';
+import 'package:deinort_app/utils/times.dart';
 import 'package:deinort_app/services/webservice.dart';
 import 'package:deinort_app/utils/constants.dart';
-import 'package:deinort_app/redux/state.dart';
+import 'package:redux/redux.dart';
 import 'package:deinort_app/redux/actions.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 
@@ -95,6 +96,9 @@ class NewsListState extends State<NewsList> {
                     bottom: 10,
                     left: 10),
                   color: Color(0xFFFFFFFF),
+                  decoration: new BoxDecoration(
+                    borderRadius: new BorderRadius.all(const Radius.circular(20.0))
+                  ),
                   child: StoreConnector<AppState, List<NewsArticle>>(
                     converter: (store) {
                       return store.state.articles;
@@ -103,10 +107,55 @@ class NewsListState extends State<NewsList> {
                         return ListView.builder(
                           itemCount: _articles.length,
                           itemBuilder: (BuildContext context, int index) {
-                              return ListTile(
-                                title: Text(_articles[index].title, style: TextStyle(fontSize: 18)),
-                                subtitle: Text(_articles[index].body, style: TextStyle(fontSize: 18)),
-                              );
+                            return Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Column(
+                                        // align the text to the left instead of centered
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            readTimestamp(_articles[index].published),
+                                            style: TextStyle(fontSize: 15)
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              _articles[index].officeName,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.greenAccent
+                                                )
+                                            )
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              _articles[index].title,
+                                              style: TextStyle(fontSize: 18)
+                                            )
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              _articles[index].body,
+                                            style: TextStyle(fontSize: 18, fontStyle: FontStyle.italic)
+                                            )
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            );
+                              // return ListTile(
+                              //   title: Text(_articles[index].title, style: TextStyle(fontSize: 18)),
+                              //   subtitle: Text(_articles[index].body, style: TextStyle(fontSize: 18)),
+                              // );
                           },
                         );
                       },
