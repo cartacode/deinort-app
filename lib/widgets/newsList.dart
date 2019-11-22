@@ -15,7 +15,6 @@ import 'package:redux/redux.dart';
 import 'package:deinort_app/redux/actions.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 import 'package:deinort_app/utils/database.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
