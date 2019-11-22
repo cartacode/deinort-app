@@ -30,12 +30,12 @@ Future<void> getCurrentLocation() async {
 
 void main() async {
   await getCurrentLocation();
-
+  store.dispatch(ShowLoadingAction());
   return runApp(App());
 }
 
 final store = new Store<AppState>(appStateReducers,
-    initialState: new AppState([], null), middleware: [thunkMiddleware]);
+    initialState: new AppState([], null, true), middleware: [thunkMiddleware]);
 
 ThunkAction<AppState> populateNewsArticles = (Store<AppState> store) {
   String newsUrl, geocodeUrl;
@@ -43,6 +43,7 @@ ThunkAction<AppState> populateNewsArticles = (Store<AppState> store) {
   + currentLocation['longitude'].toString() + Constants.GEOCODE_KEY;
 
   Webservice().loadByParams(geocodeUrl, UserLocation.info).then((location) {
+    print(location.city);
     store.dispatch(new FetchLocationAction(location));
 
     newsUrl = Constants.HEADLINE_NEWS_URL + '/region/' + 'sh' + Constants.NEWS_PARAMS;
