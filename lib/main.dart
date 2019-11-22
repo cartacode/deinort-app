@@ -35,7 +35,7 @@ void main() async {
 }
 
 final store = new Store<AppState>(appStateReducers,
-    initialState: new AppState([], null, true), middleware: [thunkMiddleware]);
+    initialState: new AppState([], null, true, null), middleware: [thunkMiddleware]);
 
 ThunkAction<AppState> populateNewsArticles = (Store<AppState> store) {
   String newsUrl, geocodeUrl;
