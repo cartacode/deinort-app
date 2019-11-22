@@ -1,9 +1,10 @@
-
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:deinort_app/models/newsArticle.dart';
 import 'package:deinort_app/models/location.dart';
+import 'package:deinort_app/models/client.dart';
 import 'package:deinort_app/redux/state.dart';
 import 'package:deinort_app/utils/times.dart';
 import 'package:deinort_app/services/webservice.dart';
@@ -11,6 +12,11 @@ import 'package:deinort_app/utils/constants.dart';
 import 'package:redux/redux.dart';
 import 'package:deinort_app/redux/actions.dart';
 import 'package:redux_thunk/redux_thunk.dart';
+import 'package:deinort_app/utils/database.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:deinort_app/utils/modals.dart';
 
 String cityName;
@@ -28,7 +34,7 @@ class NewsListState extends State<NewsList> {
     super.dispose();
   }
 
-  ThunkAction<AppState> searchNewsByCity = (Store<AppState> store) {
+  Null Function(Store<AppState> store, String pid) searchNewsByCity = (Store<AppState> store, String pid) {
     String newsUrl, geocodeUrl;
     print("cityname: $cityName");
     geocodeUrl = Constants.GEOCODE_URL + cityName + Constants.GEOCODE_KEY;
@@ -36,7 +42,7 @@ class NewsListState extends State<NewsList> {
     Webservice().loadByParams(geocodeUrl, UserLocation.searchByCity).then((location) {
       store.dispatch(new FetchLocationAction(location));
 
-      newsUrl = Constants.HEADLINE_NEWS_URL + '/region/' + 'sh' + Constants.NEWS_PARAMS;
+      newsUrl = Constants.HEADLINE_NEWS_URL + '/office/' + pid + Constants.NEWS_PARAMS;
       Webservice().loadByParams(newsUrl, NewsArticle.all).then((newsArticles) {
         store.dispatch(new FetchArticlesAction(newsArticles));
       });
@@ -49,6 +55,9 @@ class NewsListState extends State<NewsList> {
     return Scaffold(
         body: Stack(
           children: <Widget>[
+            Image.network(
+              'https://maps.googleapis.com/maps/api/staticmap?size=600X400&zoom=6&center=-25.0324,45.9324&key=' + Constants.GOOGLE_MAP_KEY
+            ),
             Image.asset(
               'assets/google.jpg',
               width: size.width,
@@ -86,7 +95,16 @@ class NewsListState extends State<NewsList> {
                             onSubmitted: (text) {
                               cityName = text;
                               final store = StoreProvider.of<AppState>(context);
-                              store.dispatch(searchNewsByCity);
+                              List<Client> polices = DBProvider.db.getClientsByCity(text);
+                              if (polices != null) {
+                                store.dispatch(EmptyArticlesAction());
+
+                                for (var i =0; i < polices.length; i ++) {
+                                  if (polices.contains(text)) {
+                                    store.dispatch(searchNewsByCity(store, polices[i].pid));
+                                  } else {}
+                                }
+                              }
                             },
                             style: new TextStyle(
                               height: 1.5,
