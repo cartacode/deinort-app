@@ -1,4 +1,9 @@
 import 'package:intl/intl.dart';
+import 'dart:async';
+
+Future sleep() {
+  return new Future.delayed(const Duration(seconds: 2), () => "1");
+}
 
 String readTimestamp(String created) {
   var now = new DateTime.now();

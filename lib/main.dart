@@ -29,7 +29,6 @@ Future<void> getCurrentLocation() async {
 }
 
 void main() async {
-  print("main");
   await getCurrentLocation();
 
   return runApp(App());
