@@ -7,6 +7,16 @@ class FetchArticlesAction {
   FetchArticlesAction(this.articles);
 }
 
+class EmptyArticlesAction {
+  EmptyArticlesAction();
+}
+
+class AddArticlesAction {
+  final List<NewsArticle> articles;
+
+  AddArticlesAction(this.articles);
+}
+
 class FetchLocationAction {
   final UserLocation location;
 
