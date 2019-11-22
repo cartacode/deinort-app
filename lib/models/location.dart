@@ -18,8 +18,8 @@ class UserLocation {
 
   factory UserLocation.fromJson(Map<String,dynamic> json) {
     return UserLocation(
-      latitude: json['latitude'], 
-      longitude: json['longitude'], 
+      latitude: json['latt'], 
+      longitude: json['longt'], 
       address: json['staddress'],
       zipcode: json['zipcode'],
       city: json['city'],
@@ -31,8 +31,8 @@ class UserLocation {
   factory UserLocation.fromReverseJson(Map<String,dynamic> json) {
     if (json.containsKey('alt')) {
       return UserLocation(
-        latitude: json['alt']['loc']['latt'], 
-        longitude: json['alt']['loc']['longt'], 
+        latitude: json['latt'], 
+        longitude: json['longt'], 
         address: json['alt']['loc']['staddress'],
         zipcode: json['alt']['loc']['postal'],
         city: json['alt']['loc']['city'],

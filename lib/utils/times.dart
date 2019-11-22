@@ -2,7 +2,7 @@ import 'package:intl/intl.dart';
 import 'dart:async';
 
 Future sleep() {
-  return new Future.delayed(const Duration(seconds: 2), () => "1");
+  return new Future.delayed(const Duration(seconds: 1), () => "1");
 }
 
 String readTimestamp(String created) {

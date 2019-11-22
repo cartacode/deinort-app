@@ -22,3 +22,7 @@ class FetchLocationAction {
 
   FetchLocationAction(this.location);
 }
+
+class ShowLoadingAction {
+  ShowLoadingAction();
+}
