@@ -18,14 +18,21 @@ class NewsArticle {
   this.officeId, this.short, this.highlight});
 
   factory NewsArticle.fromJson(Map<String,dynamic> json) {
+    String officeName = '', officeId = '';
+    if (json['office'] != null && json['office'].containsKey('name')) {
+      officeName = json['office']['name'];
+    }
 
+    if (json['office'] != null && json['office'].containsKey('id')) {
+      officeId = json['office']['name'];
+    }
     return NewsArticle(
       title: json['title'], 
       body: json['body'], 
       url: json['url'] ?? '',
       published: json['published'] ?? '',
-      officeName: json['office']['name'] ?? '',
-      officeId: json['office']['id'] ?? '',
+      officeName: officeName ?? '',
+      officeId: officeId,
       highlight: json['highlight'] ?? '',
       short: json['short'] ?? '',
     );
@@ -41,8 +48,12 @@ class NewsArticle {
       url: Constants.HEADLINE_NEWS_URL,
       parse: (response) {
         final result = json.decode(response.body); 
-        Iterable list = result['content']['story'];
-        return list.map((model) => NewsArticle.fromJson(model)).toList();
+        if (result['success'] == "1") {
+          Iterable list = result['content']['story'];
+          return list.map((model) => NewsArticle.fromJson(model)).toList();
+        } else {
+          return null;
+        }
       }
     );
 

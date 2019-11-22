@@ -18,10 +18,10 @@ class Client {
   Client({this.pid, this.name, this.city});
 
   factory Client.fromMap(Map<String, dynamic> json) => new Client(
-        pid: json["pid"],
-        name: json["name"],
-        city: json["city"],
-      );
+    pid: json["pid"],
+    name: json["name"],
+    city: json["city"],
+  );
 
   Map<String, dynamic> toMap() {
     return {

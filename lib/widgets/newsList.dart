@@ -19,8 +19,6 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:deinort_app/utils/modals.dart';
 
-String cityName;
-
 class NewsListState extends State<NewsList> {
   @override
   void initState() {
@@ -35,17 +33,13 @@ class NewsListState extends State<NewsList> {
   }
 
   Null Function(Store<AppState> store, String pid) searchNewsByCity = (Store<AppState> store, String pid) {
-    String newsUrl, geocodeUrl;
-    print("cityname: $cityName");
-    geocodeUrl = Constants.GEOCODE_URL + cityName + Constants.GEOCODE_KEY;
+    String newsUrl;
+    newsUrl = Constants.HEADLINE_NEWS_URL + '/office/' + pid + Constants.NEWS_PARAMS;
 
-    Webservice().loadByParams(geocodeUrl, UserLocation.searchByCity).then((location) {
-      store.dispatch(new FetchLocationAction(location));
-
-      newsUrl = Constants.HEADLINE_NEWS_URL + '/office/' + pid + Constants.NEWS_PARAMS;
-      Webservice().loadByParams(newsUrl, NewsArticle.all).then((newsArticles) {
-        store.dispatch(new FetchArticlesAction(newsArticles));
-      });
+    Webservice().loadByParams(newsUrl, NewsArticle.all).then((newsArticles) {
+      if (newsArticles != null) {
+        store.dispatch(new AddArticlesAction(newsArticles));
+      }
     });
   };
 
@@ -56,7 +50,7 @@ class NewsListState extends State<NewsList> {
         body: Stack(
           children: <Widget>[
             Image.network(
-              'https://maps.googleapis.com/maps/api/staticmap?size=600X400&zoom=6&center=-25.0324,45.9324&key=' + Constants.GOOGLE_MAP_KEY
+              'https://maps.googleapis.com/maps/api/staticmap?size=600X400&zoom=16&center=-25.0324,45.9324&key=' + Constants.GOOGLE_MAP_KEY
             ),
             Image.asset(
               'assets/google.jpg',
@@ -92,17 +86,16 @@ class NewsListState extends State<NewsList> {
                             borderRadius: BorderRadius.all(Radius.circular(18)),
                           ),
                           child: TextField(
-                            onSubmitted: (text) {
-                              cityName = text;
+                            onSubmitted: (text) async {
                               final store = StoreProvider.of<AppState>(context);
-                              List<Client> polices = DBProvider.db.getClientsByCity(text);
+                              List<Client> polices = await DBProvider.db.getClientsByCity(text);
+
                               if (polices != null) {
                                 store.dispatch(EmptyArticlesAction());
 
                                 for (var i =0; i < polices.length; i ++) {
-                                  if (polices.contains(text)) {
-                                    store.dispatch(searchNewsByCity(store, polices[i].pid));
-                                  } else {}
+                                  sleep();
+                                  store.dispatch(searchNewsByCity(store, polices[i].pid));
                                 }
                               }
                             },
@@ -159,60 +152,64 @@ class NewsListState extends State<NewsList> {
                       return store.state.articles;
                     },
                       builder: (_, _articles) {
-                        return ListView.builder(
-                          itemCount: _articles.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: Column(
-                                        // align the text to the left instead of centered
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text(
-                                            readTimestamp(_articles[index].published),
-                                            style: TextStyle(fontSize: 15)
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(top: 10),
-                                            child: Text(
-                                              _articles[index].officeName,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.greenAccent
-                                                )
-                                            )
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(top: 10),
-                                            child: Text(
-                                              _articles[index].title,
-                                              style: TextStyle(fontSize: 18)
-                                            )
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.only(top: 10),
-                                            child: Text(
-                                              _articles[index].body.substring(0, 200) + ' ...',
-                                              style: TextStyle(
-                                                fontSize: 17,
-                                                fontStyle: FontStyle.italic,
-                                                fontFamily: "Open Sans",
+                        if (_articles != null) {
+                          return ListView.builder(
+                            itemCount: _articles.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    children: <Widget>[
+                                      Expanded(
+                                        child: Column(
+                                          // align the text to the left instead of centered
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                              readTimestamp(_articles[index].published),
+                                              style: TextStyle(fontSize: 15)
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.only(top: 10),
+                                              child: Text(
+                                                _articles[index].officeName,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.greenAccent
+                                                  )
                                               )
-                                            )
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  ],
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.only(top: 10),
+                                              child: Text(
+                                                _articles[index].title,
+                                                style: TextStyle(fontSize: 18)
+                                              )
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsets.only(top: 10),
+                                              child: Text(
+                                                _articles[index].body.substring(0, 200) + ' ...',
+                                                style: TextStyle(
+                                                  fontSize: 17,
+                                                  fontStyle: FontStyle.italic,
+                                                  fontFamily: "Open Sans",
+                                                )
+                                              )
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
+                              );
+                            },
+                          );
+                        } else {
+                          return Text('No data');
+                        }
                       },
                     ),
                 )
