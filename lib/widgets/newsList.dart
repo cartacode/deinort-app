@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:deinort_app/models/error.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -34,17 +35,28 @@ class NewsListState extends State<NewsList> {
   }
 
   Null Function(Store<AppState> store, String pid, String cityName) searchNewsByCity = (Store<AppState> store, String pid, String cityName) {
-    String newsUrl;
+    String geocodeUrl, newsUrl;
     newsUrl = Constants.HEADLINE_NEWS_URL + '/office/' + pid + Constants.NEWS_PARAMS;
+    geocodeUrl = Constants.GEOCODE_URL + cityName + Constants.GEOCODE_KEY;
 
-    UserLocation location = new UserLocation(city: cityName);
-    store.dispatch(new FetchLocationAction(location));
+    try {
+      UserLocation location = new UserLocation(city: cityName);
+      Webservice().loadByParams(geocodeUrl, UserLocation.searchByCity).then((location) {
+        print(location.city);
+        store.dispatch(new FetchLocationAction(location));
 
-    Webservice().loadByParams(newsUrl, NewsArticle.all).then((newsArticles) {
-      if (newsArticles != null) {
-        store.dispatch(new AddArticlesAction(newsArticles));
-      }
-    });
+        Webservice().loadByParams(newsUrl, NewsArticle.all).then((newsArticles) {
+          if (newsArticles != null) {
+            store.dispatch(new AddArticlesAction(newsArticles));
+          }
+        });
+      });
+    } catch (e) {
+      print("error catch!!!!!!!!!!!!!");
+      print(e.toString());
+      CustomError error = new CustomError(errorMsg: e.toString(), status: true);
+      store.dispatch(new ErrorHanlderAction(error));
+    }
   };
 
   @override
@@ -58,12 +70,12 @@ class NewsListState extends State<NewsList> {
                 return store.state.location;
               },
               builder: (_, _location) {
-                print(size.width);
-                print(size.height);
+                print(_location.latitude);
+                print(_location.longitude);
                 return Image.network(
                   'https://maps.googleapis.com/maps/api/staticmap?center=-' + _location.latitude +
-                  ','+ _location.longitude + '&size=' + size.width.toString() + 'x'
-                  + size.height.toString() + '&zoom=16&key=' + Constants.GOOGLE_MAP_KEY
+                  ','+ _location.longitude + '&size=' + size.width.toInt().toString() + 'x'
+                  + size.height.toInt().toString() + '&zoom=16&key=' + Constants.GOOGLE_MAP_KEY
                 );
               }
             ),
@@ -84,7 +96,6 @@ class NewsListState extends State<NewsList> {
                       return store.state;
                     },
                     builder: (_, _state) {
-                      print(_state.isLoading);
                       if (_state.isLoading == false) {
                         
                         return Expanded(

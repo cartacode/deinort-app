@@ -1,3 +1,4 @@
+import 'package:deinort_app/models/error.dart';
 import 'package:deinort_app/models/newsArticle.dart';
 import 'package:deinort_app/models/location.dart';
 
@@ -25,4 +26,9 @@ class FetchLocationAction {
 
 class ShowLoadingAction {
   ShowLoadingAction();
+}
+
+class ErrorHanlderAction {
+  CustomError error;
+  ErrorHanlderAction(this.error);
 }

@@ -3,9 +3,9 @@ import 'package:deinort_app/redux/actions.dart';
 
 AppState appStateReducers(AppState state, dynamic action) {
   if (action is FetchArticlesAction) {
-    return AppState(action.articles, state.location, false);
+    return AppState(action.articles, state.location,false, state.error);
   } else if (action is EmptyArticlesAction) {
-    return AppState(null, state.location, false);
+    return AppState(null, state.location,false, state.error);
   } else if (action is AddArticlesAction) {
     var newArticles = state.articles;
 
@@ -17,11 +17,13 @@ AppState appStateReducers(AppState state, dynamic action) {
       }
     }
 
-    return AppState(newArticles, state.location, false);
+    return AppState(newArticles, state.location,false, state.error);
   } else if (action is FetchLocationAction) {
-    return AppState(state.articles, action.location, false);
+    return AppState(state.articles, action.location,false, state.error);
   } else if (action is ShowLoadingAction) {
-    return AppState(state.articles, state.location, true);
+    return AppState(state.articles, state.location, true, state.error);
+  } else if (action is ErrorHanlderAction) {
+    return AppState(state.articles, state.location, state.isLoading, action.error);
   }
 
   return state;

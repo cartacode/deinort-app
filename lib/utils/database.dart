@@ -36,7 +36,7 @@ class DBProvider {
 
   getClientsByCity(String cityName) async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.rawQuery("SELECT * FROM police WHERE city='$cityName'");
+    final List<Map<String, dynamic>> maps = await db.rawQuery("SELECT * FROM police WHERE city=lower('$cityName') COLLATE NOCASE");
 
     if (maps.length > 0) {
       return List.generate(maps.length, (i) {
@@ -53,7 +53,7 @@ class DBProvider {
 
   getPoliceNamesByCity(String cityName) async {
     final db = await database;
-    var res = await db.rawQuery("SELECT * FROM police WHERE city='$cityName'");
+    var res = await db.rawQuery("SELECT * FROM police WHERE city=lower('$cityName') COLLATE NOCASE");
     List<String> list =
         res.isNotEmpty ? res.toList().map((c) => c['city']) : null;
     return list;
