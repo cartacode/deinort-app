@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:deinort_app/widgets/newsList.dart';
@@ -8,10 +10,10 @@ import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 import 'package:deinort_app/redux/reducer.dart';
 import 'package:deinort_app/models/location.dart';
+import 'package:deinort_app/models/newsArticle.dart';
 import 'package:deinort_app/services/webservice.dart';
 import 'package:deinort_app/utils/constants.dart';
 import 'package:deinort_app/redux/actions.dart';
-import 'package:deinort_app/models/newsArticle.dart';
 
 final myLocation = new Location();
 var currentLocation;
@@ -27,14 +29,13 @@ Future<void> getCurrentLocation() async {
 }
 
 void main() async {
-  print("main");
   await getCurrentLocation();
-
+  store.dispatch(ShowLoadingAction());
   return runApp(App());
 }
 
 final store = new Store<AppState>(appStateReducers,
-    initialState: new AppState([], null), middleware: [thunkMiddleware]);
+    initialState: new AppState([], null, true, null), middleware: [thunkMiddleware]);
 
 ThunkAction<AppState> populateNewsArticles = (Store<AppState> store) {
   String newsUrl, geocodeUrl;
@@ -42,6 +43,7 @@ ThunkAction<AppState> populateNewsArticles = (Store<AppState> store) {
   + currentLocation['longitude'].toString() + Constants.GEOCODE_KEY;
 
   Webservice().loadByParams(geocodeUrl, UserLocation.info).then((location) {
+    print(location.city);
     store.dispatch(new FetchLocationAction(location));
 
     newsUrl = Constants.HEADLINE_NEWS_URL + '/region/' + 'sh' + Constants.NEWS_PARAMS;

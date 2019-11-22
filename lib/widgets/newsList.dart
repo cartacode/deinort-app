@@ -1,19 +1,27 @@
-
+import 'dart:async';
+import 'package:deinort_app/models/error.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:deinort_app/models/newsArticle.dart';
 import 'package:deinort_app/models/location.dart';
+import 'package:deinort_app/models/client.dart';
 import 'package:deinort_app/redux/state.dart';
 import 'package:deinort_app/utils/times.dart';
 import 'package:deinort_app/services/webservice.dart';
 import 'package:deinort_app/utils/constants.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:redux/redux.dart';
 import 'package:deinort_app/redux/actions.dart';
 import 'package:redux_thunk/redux_thunk.dart';
+import 'package:deinort_app/utils/database.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:deinort_app/utils/modals.dart';
 
 class NewsListState extends State<NewsList> {
-
   @override
   void initState() {
     super.initState();
@@ -26,22 +34,55 @@ class NewsListState extends State<NewsList> {
     super.dispose();
   }
 
+  Null Function(Store<AppState> store, String pid, String cityName) searchNewsByCity = (Store<AppState> store, String pid, String cityName) {
+    String geocodeUrl, newsUrl;
+    newsUrl = Constants.HEADLINE_NEWS_URL + '/office/' + pid + Constants.NEWS_PARAMS;
+    geocodeUrl = Constants.GEOCODE_URL + cityName + Constants.GEOCODE_KEY;
+
+    try {
+      UserLocation location = new UserLocation(city: cityName);
+      Webservice().loadByParams(geocodeUrl, UserLocation.searchByCity).then((location) {
+        print(location.city);
+        store.dispatch(new FetchLocationAction(location));
+
+        Webservice().loadByParams(newsUrl, NewsArticle.all).then((newsArticles) {
+          if (newsArticles != null) {
+            store.dispatch(new AddArticlesAction(newsArticles));
+          }
+        });
+      });
+    } catch (e) {
+      print("error catch!!!!!!!!!!!!!");
+      print(e.toString());
+      CustomError error = new CustomError(errorMsg: e.toString(), status: true);
+      store.dispatch(new ErrorHanlderAction(error));
+    }
+  };
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         body: Stack(
           children: <Widget>[
-            Image.asset(
-              'assets/google.jpg',
-              width: size.width,
-              height: size.height,
-              fit: BoxFit.fill
+            StoreConnector<AppState, UserLocation>(
+              converter: (store) {
+                return store.state.location;
+              },
+              builder: (_, _location) {
+                print(_location.latitude);
+                print(_location.longitude);
+                return Image.network(
+                  'https://maps.googleapis.com/maps/api/staticmap?center=-' + _location.latitude +
+                  ','+ _location.longitude + '&size=' + size.width.toInt().toString() + 'x'
+                  + size.height.toInt().toString() + '&zoom=16&key=' + Constants.GOOGLE_MAP_KEY
+                );
+              }
             ),
             Container(
-              height: 70,
-              margin: const EdgeInsets.only(top: 10.0),
-              padding: const EdgeInsets.only(top: 10.0),
+              height: 80,
+              margin: const EdgeInsets.only(top: 0.0),
+              padding: const EdgeInsets.only(top: 30, right: 10, bottom: 10, left: 0),
               color: Colors.white,
               child: Row(
                 children: [
@@ -50,25 +91,60 @@ class NewsListState extends State<NewsList> {
                     width: 50,
                     height: 30,
                   )),
-                  Expanded(child: TextField(
-                    onSubmitted: (text) {
-                       print("Second text field: ${text}");
+                  StoreConnector<AppState, AppState>(
+                    converter: (store) {
+                      return store.state;
                     },
-                    style: new TextStyle(
-                      height: 2.0,
-                      color: Colors.grey                  
-                    ),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: InputBorder.none,
-                      hintText: 'Enter a search key',
-                    ),
-                  )),
+                    builder: (_, _state) {
+                      if (_state.isLoading == false) {
+                        
+                        return Expanded(
+                          child: Container(
+                            width: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: const [
+                                BoxShadow(blurRadius: 5),
+                              ],
+                              borderRadius: BorderRadius.all(Radius.circular(18)),
+                            ),
+                            child: TextField(
+                              onSubmitted: (text) async {
+                                final store = StoreProvider.of<AppState>(context);
+                                List<Client> polices = await DBProvider.db.getClientsByCity(text);
+
+                                if (polices != null) {
+                                  store.dispatch(ShowLoadingAction());
+                                  store.dispatch(EmptyArticlesAction());
+
+                                  for (var i =0; i < polices.length; i ++) {
+                                    store.dispatch(searchNewsByCity(store, polices[i].pid, text));
+                                    sleep();
+                                  }
+                                }
+                              },
+                              style: new TextStyle(
+                                height: 1.5,
+                                color: Colors.grey                  
+                              ),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                hintText: 'Enter a search key',
+                              )
+                            )
+                          )
+                        );
+                      } else {
+                        return SpinKitRotatingCircle(color: Colors.white);
+                      }
+                    }
+                  ),
                 ]
               )
             ),
             Container(
+              width: size.width,
               height: 340,
               margin: const EdgeInsets.only(top: 220.0),
               padding: const EdgeInsets.only(top: 10.0),
@@ -81,24 +157,23 @@ class NewsListState extends State<NewsList> {
                   builder: (_, _location) {
                     String _address = _location !=null && _location.address != null ? _location.address + ', ' : '';
                     String _city = _location !=null && _location.city != null ? _location.city : '';
-                    return Text(
-                      _address + _city,
-                      style: TextStyle(fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.black),
+                    return Container(
+                      margin: EdgeInsets.only(top: 0, left: 20),
+                      child: Text(
+                        _address + _city,
+                        style: TextStyle(fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.black),
+                      ),
                     );
                   }
                 ),
-                Container(
-                  margin: EdgeInsets.only(
-                    top: 40,
-                    right: 10,
-                    bottom: 10,
-                    left: 10),
-                  color: Color(0xFFFFFFFF),
-                  decoration: new BoxDecoration(
-                    borderRadius: new BorderRadius.all(const Radius.circular(20.0))
-                  ),
+                Positioned(
+                  top: 25,
+                  right: 0,
+                  bottom: 0,
+                  left: 0,
+
                   child: StoreConnector<AppState, List<NewsArticle>>(
                     converter: (store) {
                       return store.state.articles;
@@ -141,8 +216,12 @@ class NewsListState extends State<NewsList> {
                                           Padding(
                                             padding: EdgeInsets.only(top: 10),
                                             child: Text(
-                                              _articles[index].body,
-                                            style: TextStyle(fontSize: 18, fontStyle: FontStyle.italic)
+                                              _articles[index].body.substring(0, 200) + ' ...',
+                                              style: TextStyle(
+                                                fontSize: 17,
+                                                fontStyle: FontStyle.italic,
+                                                fontFamily: "Open Sans",
+                                              )
                                             )
                                           ),
                                         ],
@@ -152,17 +231,30 @@ class NewsListState extends State<NewsList> {
                                 ),
                               ),
                             );
-                              // return ListTile(
-                              //   title: Text(_articles[index].title, style: TextStyle(fontSize: 18)),
-                              //   subtitle: Text(_articles[index].body, style: TextStyle(fontSize: 18)),
-                              // );
                           },
                         );
                       },
                     ),
                 )
               ],),
-            )
+            ),
+            StoreConnector<AppState, bool>(
+              converter: (store) {
+                return store.state.isLoading;
+              },
+              builder: (_, _isLoading) {
+                if (_isLoading) {
+                  return Container(
+                    color: Color.fromRGBO(255, 255, 255, 0.5),
+                    child: Center(
+                      child: SpinKitFadingCircle(color: Colors.green),
+                    ),
+                  );
+                } else {
+                  return Container();
+                }
+              }
+            ),
           ],
         )
       );

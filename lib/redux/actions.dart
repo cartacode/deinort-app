@@ -1,3 +1,4 @@
+import 'package:deinort_app/models/error.dart';
 import 'package:deinort_app/models/newsArticle.dart';
 import 'package:deinort_app/models/location.dart';
 
@@ -7,8 +8,27 @@ class FetchArticlesAction {
   FetchArticlesAction(this.articles);
 }
 
+class EmptyArticlesAction {
+  EmptyArticlesAction();
+}
+
+class AddArticlesAction {
+  final List<NewsArticle> articles;
+
+  AddArticlesAction(this.articles);
+}
+
 class FetchLocationAction {
   final UserLocation location;
 
   FetchLocationAction(this.location);
+}
+
+class ShowLoadingAction {
+  ShowLoadingAction();
+}
+
+class ErrorHanlderAction {
+  CustomError error;
+  ErrorHanlderAction(this.error);
 }

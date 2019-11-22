@@ -14,4 +14,6 @@ class Constants {
 
     static final String NEWS_PLACEHOLDER_IMAGE_ASSET_URL = 'assets/placeholder.png';
 
+    static final String GOOGLE_MAP_KEY = 'AIzaSyBN9GbS7Z-i8hRRPlwAvfn8rFyB-wjsYAE';
+
 }
