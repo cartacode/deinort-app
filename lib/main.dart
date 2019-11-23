@@ -39,18 +39,24 @@ final store = new Store<AppState>(appStateReducers,
 
 ThunkAction<AppState> populateNewsArticles = (Store<AppState> store) {
   String newsUrl, geocodeUrl;
-  geocodeUrl = Constants.GEOCODE_URL + currentLocation['latitude'].toString() + ','
-  + currentLocation['longitude'].toString() + Constants.GEOCODE_KEY;
+  try {
+    geocodeUrl = Constants.GEOCODE_URL + currentLocation['latitude'].toString() + ','
+    + currentLocation['longitude'].toString() + Constants.GEOCODE_KEY;
 
-  Webservice().loadByParams(geocodeUrl, UserLocation.info).then((location) {
-    print(location.city);
-    store.dispatch(new FetchLocationAction(location));
+    Webservice().loadByParams(geocodeUrl, UserLocation.info).then((location) {
+      print(location.city);
+      store.dispatch(new FetchLocationAction(location));
 
-    newsUrl = Constants.HEADLINE_NEWS_URL + '/region/' + 'sh' + Constants.NEWS_PARAMS;
-    Webservice().loadByParams(newsUrl, NewsArticle.all).then((newsArticles) {
-      store.dispatch(new FetchArticlesAction(newsArticles));
+      newsUrl = Constants.HEADLINE_NEWS_URL + '/region/' + 'sh' + Constants.NEWS_PARAMS;
+      Webservice().loadByParams(newsUrl, NewsArticle.all).then((newsArticles) {
+        store.dispatch(new FetchArticlesAction(newsArticles));
+      });
     });
-  });
+  } catch (e) {
+      print("error main catch!!!!!!!!!!!!!");
+      print(e.toString());
+      store.dispatch(new ErrorHanlderAction(e.toString()));
+    }
 };
 
 class App extends StatelessWidget {

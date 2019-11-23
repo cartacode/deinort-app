@@ -1,4 +1,3 @@
-import 'package:deinort_app/models/error.dart';
 import 'package:deinort_app/models/newsArticle.dart';
 import 'package:deinort_app/models/location.dart';
 
@@ -29,6 +28,6 @@ class ShowLoadingAction {
 }
 
 class ErrorHanlderAction {
-  CustomError error;
+  String error;
   ErrorHanlderAction(this.error);
 }
