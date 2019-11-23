@@ -8,6 +8,7 @@ AppState appStateReducers(AppState state, dynamic action) {
     return AppState(null, state.location,false, state.error);
   } else if (action is AddArticlesAction) {
     var newArticles = state.articles;
+    var isLoading = false;
 
     if (action.articles != null) {
       if (state.articles != null) {
@@ -17,7 +18,11 @@ AppState appStateReducers(AppState state, dynamic action) {
       }
     }
 
-    return AppState(newArticles, state.location,false, state.error);
+    if (newArticles == null) {
+      isLoading = true;
+    }
+
+    return AppState(newArticles, state.location,isLoading, state.error);
   } else if (action is FetchLocationAction) {
     return AppState(state.articles, action.location,false, state.error);
   } else if (action is ShowLoadingAction) {
