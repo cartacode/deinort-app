@@ -22,3 +22,11 @@ void showAlertDialog(context, text) {
       },
     );
   }
+
+  void showAlert(BuildContext context, errMsg) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text("$errMsg"),
+      ));
+  }

@@ -2,13 +2,12 @@ import 'dart:isolate';
 
 import 'package:deinort_app/models/newsArticle.dart';
 import 'package:deinort_app/models/location.dart';
-import 'package:deinort_app/models/error.dart';
 
 class AppState {
   final List<NewsArticle> articles;
   final UserLocation location;
   final bool isLoading;
-  final CustomError error;
+  final String error;
 
   AppState(this.articles, this.location, this.isLoading, this.error);
 

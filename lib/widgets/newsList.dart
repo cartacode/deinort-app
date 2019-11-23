@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:deinort_app/models/error.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -38,8 +37,10 @@ class NewsListState extends State<NewsList> {
     newsUrl = Constants.HEADLINE_NEWS_URL + '/office/' + pid + Constants.NEWS_PARAMS;
     geocodeUrl = Constants.GEOCODE_URL + cityName + Constants.GEOCODE_KEY;
 
+    store.dispatch(ShowLoadingAction());
+
     try {
-      UserLocation location = new UserLocation(city: cityName);
+      // UserLocation location = new UserLocation(city: cityName);
       Webservice().loadByParams(geocodeUrl, UserLocation.searchByCity).then((location) {
         print(location.city);
         store.dispatch(new FetchLocationAction(location));
@@ -53,8 +54,7 @@ class NewsListState extends State<NewsList> {
     } catch (e) {
       print("error catch!!!!!!!!!!!!!");
       print(e.toString());
-      CustomError error = new CustomError(errorMsg: e.toString(), status: true);
-      store.dispatch(new ErrorHanlderAction(error));
+      store.dispatch(new ErrorHanlderAction(e.toString()));
     }
   };
 
@@ -69,13 +69,22 @@ class NewsListState extends State<NewsList> {
                 return store.state.location;
               },
               builder: (_, _location) {
-                print(_location.latitude);
-                print(_location.longitude);
-                return Image.network(
-                  'https://maps.googleapis.com/maps/api/staticmap?center=-' + _location.latitude +
-                  ','+ _location.longitude + '&size=' + size.width.toInt().toString() + 'x'
-                  + size.height.toInt().toString() + '&zoom=16&key=' + Constants.GOOGLE_MAP_KEY
-                );
+                if (_location != null) {
+                  return Image.network(
+                    'https://maps.googleapis.com/maps/api/staticmap?center=-' + _location.latitude +
+                    ','+ _location.longitude + '&size=' + size.width.toInt().toString() + 'x'
+                    + size.height.toInt().toString() + '&zoom=16&key=' + Constants.GOOGLE_MAP_KEY,
+                    width: size.width,
+                    height: size.height,
+                    fit: BoxFit.fill,
+                  );
+                } else {
+                  return Image.asset(
+                    'google.com',
+                    width: size.width,
+                    height: size.height
+                  );
+                }
               }
             ),
             Container(
@@ -113,13 +122,14 @@ class NewsListState extends State<NewsList> {
                                 List<Client> polices = await DBProvider.db.getClientsByCity(text);
 
                                 if (polices != null) {
-                                  store.dispatch(ShowLoadingAction());
                                   store.dispatch(EmptyArticlesAction());
 
                                   for (var i =0; i < polices.length; i ++) {
                                     store.dispatch(searchNewsByCity(store, polices[i].pid, text));
                                     sleep();
                                   }
+                                } else {
+                                  store.dispatch(new ErrorHanlderAction('City name is invalide'));
                                 }
                               },
                               style: new TextStyle(
@@ -142,43 +152,63 @@ class NewsListState extends State<NewsList> {
                 ]
               )
             ),
-            Container(
-              width: size.width,
-              height: 340,
-              margin: const EdgeInsets.only(top: 220.0),
-              padding: const EdgeInsets.only(top: 10.0),
-              color: Colors.blue,
-              child: Stack(children: <Widget>[
-                StoreConnector<AppState, UserLocation>(
-                  converter: (store) {
-                    return store.state.location;
-                  },
-                  builder: (_, _location) {
-                    String _address = _location !=null && _location.address != null ? _location.address + ', ' : '';
-                    String _city = _location !=null && _location.city != null ? _location.city : '';
-                    return Container(
-                      margin: EdgeInsets.only(top: 0, left: 20),
-                      child: Text(
-                        _address + _city,
-                        style: TextStyle(fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Colors.black),
+            StoreConnector<AppState, AppState>(
+              converter: (store) {
+                return store.state;
+              },
+              builder: (_, _state) {
+                var _location = _state.location;
+                var _articles = _state.articles;
+                String _address = _location !=null && _location.address != null ? _location.address + ', ' : '';
+                String _city = _location !=null && _location.city != null ? _location.city : '';
+
+                if (_state.error != null && _state.error != "") {
+                  print(_state.error);
+                  return AlertDialog(
+                    content: new Text(_state.error),
+                    actions: <Widget>[
+                      // usually buttons at the bottom of the dialog
+                      new FlatButton(
+                        child: new Text("Close"),
+                        onPressed: () {
+                          // Navigator.of(context, rootNavigator: true).pop('dialog');
+                        },
+                      ),
+                    ],
+                  );
+                }
+
+                if (_articles == null) {
+                  return Container(
+                      color: Color.fromRGBO(255, 255, 255, 0.5),
+                      child: Center(
+                        child: SpinKitFadingCircle(color: Colors.green),
                       ),
                     );
-                  }
-                ),
-                Positioned(
-                  top: 25,
-                  right: 0,
-                  bottom: 0,
-                  left: 0,
+                } else {
+                  return Container(
+                    width: size.width,
+                    height: 340,
+                    margin: const EdgeInsets.only(top: 220.0),
+                    padding: const EdgeInsets.only(top: 10.0),
+                    color: Colors.blue,
+                    child: Stack(children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.only(top: 0, left: 20),
+                        child: Text(
+                          _address + _city,
+                          style: TextStyle(fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.black),
+                        ),
+                      ),
+                      Positioned(
+                        top: 25,
+                        right: 0,
+                        bottom: 0,
+                        left: 0,
 
-                  child: StoreConnector<AppState, List<NewsArticle>>(
-                    converter: (store) {
-                      return store.state.articles;
-                    },
-                      builder: (_, _articles) {
-                        return ListView.builder(
+                        child: ListView.builder(
                           itemCount: _articles.length,
                           itemBuilder: (BuildContext context, int index) {
                             return Card(
@@ -231,11 +261,12 @@ class NewsListState extends State<NewsList> {
                               ),
                             );
                           },
-                        );
-                      },
-                    ),
-                )
-              ],),
+                        )
+                      )
+                    ],),
+                  );
+                }
+              }
             ),
             StoreConnector<AppState, bool>(
               converter: (store) {
